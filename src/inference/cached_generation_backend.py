@@ -12,14 +12,18 @@ class CachedGenerationBackend:
     def __init__(
         self,
         generator: CachedTextGenerator,
-        context_size: int,
+        context_size: int | None = None,
     ) -> None:
+        if context_size is not None and context_size <= 0:
+            raise ValueError(
+                "context_size must be positive."
+            )
+
         self._generator = generator
-        self._context_size = context_size
 
     @property
     def context_size(self) -> int:
-        return self._context_size
+        return self._generator.context_size
 
     def generate(
         self,

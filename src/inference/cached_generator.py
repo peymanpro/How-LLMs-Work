@@ -31,6 +31,10 @@ class CachedTextGenerator:
             else GreedySamplingStrategy()
         )
 
+    @property
+    def context_size(self) -> int:
+        return self._engine.context_size
+
     def generate(
         self,
         prompt: list[int],
@@ -107,3 +111,4 @@ class CachedTextGenerator:
         return CachedGenerationResult(
             token_ids=tuple(generated)
         )
+
