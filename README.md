@@ -14,7 +14,7 @@ The goal is not to reproduce the scale or performance of production LLMs. The go
 
 The project follows the conceptual pipeline:
 
-```text
+```
 Text
   ↓
 Tokenization
@@ -126,89 +126,58 @@ The repository implements these ideas as small Python components rather than hid
 
 ---
 
-# 3. The Mathematics
+## 3. The Mathematics
 
-## 3.1 Token embeddings
+### 3.1 Token embeddings
 
 A token ID is mapped to a learned vector:
 
-$$
-\mathbf{e}_i = E[i]
-$$
+$$e_i = E[i]$$
 
 where:
 
 - $E \in \mathbb{R}^{V \times d}$ is the embedding matrix
 - $V$ is the vocabulary size
 - $d$ is the model dimension
-- $\mathbf{e}_i \in \mathbb{R}^{d}$ is the representation of token $i$
+- $e_i \in \mathbb{R}^{d}$ is the representation of token $i$
 
 For a sequence of $n$ tokens:
 
-$$
-X =
-\begin{bmatrix}
-\mathbf{e}_1 \\
-\mathbf{e}_2 \\
-\vdots \\
-\mathbf{e}_n
-\end{bmatrix}
-\in \mathbb{R}^{n \times d}
-$$
+$$X = \begin{bmatrix} e_1 \\ e_2 \\ \vdots \\ e_n \end{bmatrix} \in \mathbb{R}^{n \times d}$$
 
 ---
 
-## 3.2 Positional information
+### 3.2 Positional information
 
 Self-attention by itself does not inherently encode token order, so positional information is added to token representations.
 
 A classical sinusoidal positional encoding is:
 
-$$
-PE_{(pos,2i)} =
-\sin\left(
-\frac{pos}{10000^{2i/d}}
-\right)
-$$
+$$PE_{(pos,2i)} = \sin\left(\frac{pos}{10000^{2i/d}}\right)$$
 
-$$
-PE_{(pos,2i+1)} =
-\cos\left(
-\frac{pos}{10000^{2i/d}}
-\right)
-$$
+$$PE_{(pos,2i+1)} = \cos\left(\frac{pos}{10000^{2i/d}}\right)$$
 
 and the input to the Transformer can be written as:
 
-$$
-H^{(0)} = X + PE
-$$
+$$H^{(0)} = X + PE$$
 
 The repository also contains simplified positional mechanisms in some educational components. The important idea is the same: the model needs information about **where** a token occurs.
 
 ---
 
-## 3.3 Query, Key, and Value projections
+### 3.3 Query, Key, and Value projections
 
 For hidden states $X$, the attention projections are:
 
-$$
-Q = XW_Q
-$$
+$$Q = XW_Q$$
 
-$$
-K = XW_K
-$$
+$$K = XW_K$$
 
-$$
-V = XW_V
-$$
+$$V = XW_V$$
 
 where:
 
-$$
-W_Q, W_K, W_V \in \mathbb{R}^{d \times d_h}
-$$
+$$W_Q, W_K, W_V \in \mathbb{R}^{d \times d_h}$$
 
 and $d_h$ is the per-head dimension.
 
@@ -220,99 +189,61 @@ These projections create three different views of the same hidden states:
 
 ---
 
-## 3.4 Scaled dot-product attention
+### 3.4 Scaled dot-product attention
 
 The core attention equation is:
 
-$$
-\operatorname{Attention}(Q,K,V)
-=
-\operatorname{softmax}
-\left(
-\frac{QK^\top}{\sqrt{d_h}}
-\right)V
-$$
+$$\text{Attention}(Q,K,V) = \text{softmax}\left(\frac{QK^\top}{\sqrt{d_h}}\right)V$$
 
 The scaling factor prevents the dot products from growing too large as the dimension increases.
 
 For a causal decoder, future positions must not be visible. Conceptually this is implemented with a causal mask:
 
-$$
-A =
-\operatorname{softmax}
-\left(
-\frac{QK^\top + M}{\sqrt{d_h}}
-\right)
-$$
+$$A = \text{softmax}\left(\frac{QK^\top + M}{\sqrt{d_h}}\right)$$
 
 where masked future positions receive a value approaching $-\infty$ before softmax.
 
 ---
 
-## 3.5 Softmax
+### 3.5 Softmax
 
 Given logits $z_1,\dots,z_V$:
 
-$$
-\operatorname{softmax}(z_i)
-=
-\frac{e^{z_i}}
-{\sum_{j=1}^{V} e^{z_j}}
-$$
+$$\text{softmax}(z_i) = \frac{e^{z_i}}{\sum_{j=1}^{V} e^{z_j}}$$
 
 The resulting probabilities satisfy:
 
-$$
-0 \le p_i \le 1
-$$
+$$0 \le p_i \le 1$$
 
 and:
 
-$$
-\sum_{i=1}^{V} p_i = 1
-$$
+$$\sum_{i=1}^{V} p_i = 1$$
 
 ---
 
-## 3.6 Multi-head attention
+### 3.6 Multi-head attention
 
 Instead of using one attention operation, a Transformer uses multiple heads:
 
-$$
-head_i =
-\operatorname{Attention}
-\left(
-Q_i,K_i,V_i
-\right)
-$$
+$$\text{head}_i = \text{Attention}(Q_i,K_i,V_i)$$
 
 The heads are concatenated:
 
-$$
-H =
-\operatorname{Concat}
-\left(
-head_1,\ldots,head_h
-\right)
-$$
+$$H = \text{Concat}(\text{head}_1,\ldots,\text{head}_h)$$
 
 and projected:
 
-$$
-O = HW_O
-$$
+$$O = HW_O$$
 
 The project contains both a trainable multi-head implementation and a cached incremental version.
 
 ---
 
-## 3.7 Residual connections
+### 3.7 Residual connections
 
 A sublayer output is combined with its input:
 
-$$
-R = X + F(X)
-$$
+$$R = X + F(X)$$
 
 This allows information to flow through the network while making deeper optimization easier.
 
@@ -320,51 +251,27 @@ The repository explicitly models residual operations because they are an importa
 
 ---
 
-## 3.8 Layer normalization
+### 3.8 Layer normalization
 
 For a vector $x$ of dimension $d$:
 
-$$
-\mu =
-\frac{1}{d}
-\sum_{i=1}^{d} x_i
-$$
+$$\mu = \frac{1}{d}\sum_{i=1}^{d} x_i$$
 
-$$
-\sigma^2 =
-\frac{1}{d}
-\sum_{i=1}^{d}
-(x_i-\mu)^2
-$$
+$$\sigma^2 = \frac{1}{d}\sum_{i=1}^{d}(x_i-\mu)^2$$
 
 Then:
 
-$$
-\operatorname{LayerNorm}(x)
-=
-\gamma
-\odot
-\frac{x-\mu}
-{\sqrt{\sigma^2+\epsilon}}
-+
-\beta
-$$
+$$\text{LayerNorm}(x) = \gamma \odot \frac{x-\mu}{\sqrt{\sigma^2+\epsilon}} + \beta$$
 
 where $\gamma$ and $\beta$ are learnable parameters.
 
 ---
 
-## 3.9 Feed-forward network
+### 3.9 Feed-forward network
 
 A Transformer feed-forward block can be represented as:
 
-$$
-FFN(x)
-=
-W_2 \,
-\phi(W_1x+b_1)
-+b_2
-$$
+$$\text{FFN}(x) = W_2 \, \phi(W_1x+b_1) + b_2$$
 
 where $\phi$ is a non-linear activation.
 
@@ -372,26 +279,15 @@ Conceptually, the attention mechanism mixes information **between positions**, w
 
 ---
 
-## 3.10 Transformer block
+### 3.10 Transformer block
 
 A simplified decoder block follows the pattern:
 
-$$
-H_1
-=
-\operatorname{LayerNorm}
-\left(
-X + \operatorname{Attention}(X)
-\right)
-$$
+$$H_1 = \text{LayerNorm}\left(X + \text{Attention}(X)\right)$$
 
 followed by:
 
-$$
-H_2
-=
-H_1 + FFN(H_1)
-$$
+$$H_2 = H_1 + \text{FFN}(H_1)$$
 
 and another normalization step depending on the exact block formulation.
 
@@ -399,117 +295,77 @@ The project intentionally keeps these operations explicit so the intermediate va
 
 ---
 
-## 3.11 Vocabulary projection
+### 3.11 Vocabulary projection
 
 The final hidden representation is projected into vocabulary space:
 
-$$
-Z = HW_{out} + b_{out}
-$$
+$$Z = HW_{out} + b_{out}$$
 
 where:
 
-$$
-H \in \mathbb{R}^{n \times d}
-$$
-
-and:
-
-$$
-W_{out} \in \mathbb{R}^{d \times V}
-$$
+- $H \in \mathbb{R}^{n \times d}$
+- $W_{out} \in \mathbb{R}^{d \times V}$
 
 giving:
 
-$$
-Z \in \mathbb{R}^{n \times V}
-$$
+$$Z \in \mathbb{R}^{n \times V}$$
 
 Each row contains the logits for predicting the next token at that position.
 
 ---
 
-## 3.12 Causal language-model objective
+### 3.12 Causal language-model objective
 
 For a sequence:
 
-```text
+```
 tokens:  x₁ x₂ x₃ x₄
 ```
 
 the training objective shifts the sequence:
 
-```text
+```
 input:   x₁ x₂ x₃
 target:  x₂ x₃ x₄
 ```
 
 The model learns:
 
-$$
-P(x_t \mid x_1,\ldots,x_{t-1})
-$$
+$$P(x_t \mid x_1,\ldots,x_{t-1})$$
 
 for each position $t$.
 
 The complete autoregressive objective is:
 
-$$
-\mathcal{L}
-=
--\sum_{t=1}^{n}
-\log
-P(x_t \mid x_{<t})
-$$
+$$\mathcal{L} = -\sum_{t=1}^{n}\log P(x_t \mid x_{<t})$$
 
 Usually the mean is taken over the training positions.
 
 ---
 
-## 3.13 Cross-entropy loss
+### 3.13 Cross-entropy loss
 
 For a target token $y$ and predicted probability distribution $p$:
 
-$$
-\mathcal{L}
-=
--\log p_y
-$$
+$$\mathcal{L} = -\log p_y$$
 
 For a sequence of $n$ predictions:
 
-$$
-\mathcal{L}
-=
--\frac{1}{n}
-\sum_{t=1}^{n}
-\log p_{t,y_t}
-$$
+$$\mathcal{L} = -\frac{1}{n}\sum_{t=1}^{n}\log p_{t,y_t}$$
 
 A lower loss means the model assigns higher probability to the correct target tokens.
 
 ---
 
-## 3.14 Backpropagation
+### 3.14 Backpropagation
 
 Training computes gradients of the loss with respect to model parameters:
 
-$$
-\frac{\partial \mathcal{L}}
-{\partial \theta}
-$$
+$$\frac{\partial \mathcal{L}}{\partial \theta}$$
 
 The parameters are then updated using a simple gradient-descent rule:
 
-$$
-\theta
-\leftarrow
-\theta
--
-\eta
-\frac{\partial \mathcal{L}}
-{\partial \theta}
-$$
+$$\theta \leftarrow \theta - \eta \frac{\partial \mathcal{L}}{\partial \theta}$$
 
 where $\eta$ is the learning rate.
 
@@ -517,21 +373,15 @@ The repository includes explicit backward implementations for important Transfor
 
 ---
 
-# 4. From Logits to a Generated Token
+## 4. From Logits to a Generated Token
 
 At inference time the model produces a vocabulary-sized logit vector:
 
-$$
-z =
-[z_1,z_2,\ldots,z_V]
-$$
+$$z = [z_1,z_2,\ldots,z_V]$$
 
 A deterministic approach chooses:
 
-$$
-\hat{y}
-=\arg\max_i z_i
-$$
+$$\hat{y} = \arg\max_i z_i$$
 
 This is the basic greedy strategy.
 
@@ -539,25 +389,15 @@ But generation does not have to be deterministic.
 
 ---
 
-## 4.1 Temperature sampling
+### 4.1 Temperature sampling
 
 Temperature rescales logits:
 
-$$
-z_i' =
-\frac{z_i}{T}
-$$
+$$z_i' = \frac{z_i}{T}$$
 
 and probabilities become:
 
-$$
-p_i =
-\frac{
-e^{z_i/T}
-}{
-\sum_j e^{z_j/T}
-}
-$$
+$$p_i = \frac{e^{z_i/T}}{\sum_j e^{z_j/T}}$$
 
 Interpretation:
 
@@ -569,39 +409,27 @@ The project demonstrates this effect explicitly.
 
 ---
 
-## 4.2 Top-K sampling
+### 4.2 Top-K sampling
 
 Top-K sampling keeps only the $K$ highest-scoring tokens.
 
 Let $S_K$ be the set of those tokens:
 
-$$
-S_K
-=
-\operatorname{TopK}(z,K)
-$$
+$$S_K = \text{TopK}(z,K)$$
 
 All other token probabilities are removed and the remaining probabilities are renormalized:
 
-$$
-p_i = 0
-\quad
-\text{for }
-i \notin S_K
-$$
+$$p_i = 0 \quad \text{for } i \notin S_K$$
 
 Then sampling occurs only from the reduced candidate set.
 
 ---
 
-## 4.3 Top-P sampling
+### 4.3 Top-P sampling
 
 Top-P, or nucleus sampling, sorts candidates by probability and retains the smallest set whose cumulative probability reaches $p$:
 
-$$
-\sum_{i \in S_p} p_i
-\ge p
-$$
+$$\sum_{i \in S_p} p_i \ge p$$
 
 Tokens outside the nucleus are removed before sampling.
 
@@ -609,17 +437,17 @@ This allows the candidate set to adapt to the shape of the current distribution.
 
 ---
 
-# 5. Autoregressive Generation
+## 5. Autoregressive Generation
 
 Suppose the prompt is:
 
-```text
+```
 the cat drinks milk
 ```
 
 Generation proceeds iteratively:
 
-```text
+```
 prompt
    ↓
 Transformer
@@ -637,11 +465,7 @@ repeat
 
 Mathematically:
 
-$$
-x_{t+1}
-\sim
-P(\cdot \mid x_1,\ldots,x_t)
-$$
+$$x_{t+1} \sim P(\cdot \mid x_1,\ldots,x_t)$$
 
 The sequence is therefore generated one token at a time.
 
@@ -649,13 +473,13 @@ The repository contains both direct generation and cached generation paths.
 
 ---
 
-# 6. KV Cache
+## 6. KV Cache
 
 A major cost of autoregressive generation is repeatedly recomputing keys and values for tokens that have already been processed.
 
 Without a KV cache:
 
-```text
+```
 Step 1 → process token 1
 Step 2 → process tokens 1..2 again
 Step 3 → process tokens 1..3 again
@@ -665,7 +489,7 @@ Step 4 → process tokens 1..4 again
 
 With a KV cache:
 
-```text
+```
 Prompt
   ↓
 Prefill
@@ -683,76 +507,41 @@ attend against cached K/V
 
 For each attention head, the cache stores:
 
-$$
-K_{cache}
-=
-\begin{bmatrix}
-K_1 \\
-K_2 \\
-\vdots \\
-K_t
-\end{bmatrix}
-$$
+$$K_{cache} = \begin{bmatrix} K_1 \\ K_2 \\ \vdots \\ K_t \end{bmatrix}$$
 
 and:
 
-$$
-V_{cache}
-=
-\begin{bmatrix}
-V_1 \\
-V_2 \\
-\vdots \\
-V_t
-\end{bmatrix}
-$$
+$$V_{cache} = \begin{bmatrix} V_1 \\ V_2 \\ \vdots \\ V_t \end{bmatrix}$$
 
 For the new query $Q_t$:
 
-$$
-\operatorname{Attention}
-\left(
-Q_t,K_{cache},V_{cache}
-\right)
-=
-\operatorname{softmax}
-\left(
-\frac{
-Q_tK_{cache}^{\top}
-}{
-\sqrt{d_h}
-}
-\right)
-V_{cache}
-$$
+$$\text{Attention}(Q_t,K_{cache},V_{cache}) = \text{softmax}\left(\frac{Q_tK_{cache}^\top}{\sqrt{d_h}}\right)V_{cache}$$
 
 The key point is that previous $K$ and $V$ vectors do not have to be recomputed for every generated token.
 
 ---
 
-# 7. Prefill and Decode
+## 7. Prefill and Decode
 
 The repository makes the two inference phases explicit.
 
-## Prefill
+### Prefill
 
 The complete prompt is processed:
 
-```text
+```
 prompt = [x₁, x₂, x₃, x₄]
-
      ↓
-
 cache contains K/V for all prompt positions
 ```
 
 The engine returns the logits needed to generate the next token.
 
-## Decode
+### Decode
 
 Only a newly generated token is processed:
 
-```text
+```
 x₅
  ↓
 new Q/K/V
@@ -766,7 +555,7 @@ predict x₆
 
 This gives the conceptual interface:
 
-```text
+```
 prefill(prompt)
       ↓
 next logits
@@ -780,25 +569,25 @@ decode(...)
 
 ---
 
-# 8. Sliding Context Window
+## 8. Sliding Context Window
 
 The cache cannot grow without bounds when a fixed context size is being enforced.
 
 For a context size of 4:
 
-```text
+```
 [0, 1, 2, 3]
 ```
 
 then, after generation:
 
-```text
+```
 [1, 2, 3, 4]
 ```
 
 then:
 
-```text
+```
 [2, 3, 4, 5]
 ```
 
@@ -806,7 +595,7 @@ The repository keeps the low-level Transformer backbone bounded while the genera
 
 This makes the distinction explicit:
 
-```text
+```
 Backbone
     ↓
 fixed context contract
@@ -820,9 +609,9 @@ That separation is intentional.
 
 ---
 
-# 9. Project Architecture
+## 9. Project Architecture
 
-```text
+```
 HowLLMsWork/
 │
 ├── src/
@@ -884,7 +673,7 @@ HowLLMsWork/
 
 ---
 
-# 10. Recommended Learning Order
+## 10. Recommended Learning Order
 
 The easiest way to understand the repository is to follow the concepts in this order.
 
@@ -892,7 +681,7 @@ The easiest way to understand the repository is to follow the concepts in this o
 
 Start with:
 
-```text
+```
 src/tokenization/
 src/experiments/tokenization_demo.py
 ```
@@ -903,7 +692,7 @@ Understand how text becomes token IDs.
 
 Explore:
 
-```text
+```
 src/training/dataset.py
 src/training/causal_examples.py
 ```
@@ -914,7 +703,7 @@ Understand why the input and target sequences are shifted.
 
 Explore:
 
-```text
+```
 src/llm/simple_language_model.py
 src/llm/positional_language_model.py
 ```
@@ -925,7 +714,7 @@ This gives a simpler baseline before introducing attention.
 
 Study:
 
-```text
+```
 src/attention/qkv_projection.py
 src/attention/scaled_dot_product.py
 src/attention/multi_head.py
@@ -933,7 +722,7 @@ src/attention/multi_head.py
 
 Recommended demonstrations:
 
-```text
+```
 qkv_projection_demo.py
 scaled_attention_demo.py
 multi_head_attention_demo.py
@@ -943,7 +732,7 @@ multi_head_attention_demo.py
 
 Move to:
 
-```text
+```
 src/llm/transformer_language_model.py
 ```
 
@@ -953,7 +742,7 @@ Then inspect the Transformer backbone and decoder components represented in the 
 
 Explore:
 
-```text
+```
 src/training/language_model_objective.py
 src/training/language_model_training.py
 src/training/transformer_training_bridge.py
@@ -961,7 +750,7 @@ src/training/transformer_training_bridge.py
 
 The central loop is:
 
-```text
+```
 forward
   ↓
 loss
@@ -977,7 +766,7 @@ repeat
 
 Explore:
 
-```text
+```
 src/inference/next_token.py
 src/experiments/next_token_demo.py
 ```
@@ -986,14 +775,14 @@ src/experiments/next_token_demo.py
 
 Study:
 
-```text
+```
 src/inference/generator.py
 src/inference/sampling_strategy.py
 ```
 
 Then compare:
 
-```text
+```
 Greedy
 Temperature
 Top-K
@@ -1004,7 +793,7 @@ Top-P
 
 Finally study:
 
-```text
+```
 src/attention/kv_cache.py
 src/attention/cached_attention.py
 src/attention/cached_multi_head.py
@@ -1012,7 +801,7 @@ src/attention/cached_multi_head.py
 
 and:
 
-```text
+```
 src/inference/prefill_decode.py
 src/inference/cached_generator.py
 ```
@@ -1021,7 +810,7 @@ This is where the project moves from basic Transformer mechanics into the mechan
 
 ---
 
-# 11. Experiments
+## 11. Experiments
 
 The repository contains focused executable demonstrations.
 
@@ -1113,7 +902,7 @@ Other experiments are available under `src/experiments/`.
 
 ---
 
-# 12. Testing
+## 12. Testing
 
 The project is heavily test-driven.
 
@@ -1143,7 +932,7 @@ The current repository contains **209 automated tests** covering:
 
 ---
 
-# 13. Code Quality
+## 13. Code Quality
 
 The repository uses:
 
@@ -1163,7 +952,7 @@ python -m mypy src
 
 At the time this README was prepared, the repository baseline was:
 
-```text
+```
 209 passed
 Ruff: clean
 Mypy: clean
@@ -1171,7 +960,7 @@ Mypy: clean
 
 ---
 
-# 14. Design Philosophy
+## 14. Design Philosophy
 
 The project follows a few principles.
 
@@ -1183,7 +972,7 @@ Important mathematical operations are implemented as explicit Python components 
 
 Major parts expose simple boundaries such as:
 
-```text
+```
 token_ids → hidden states
 hidden states → logits
 logits → token
@@ -1201,7 +990,7 @@ The project intentionally favors readability and inspectability over production-
 
 The repository separates:
 
-```text
+```
 Model
 Training
 Inference
@@ -1214,7 +1003,7 @@ This makes it easier to reason about where a particular behavior belongs.
 
 ---
 
-# 15. What This Project Is Not
+## 15. What This Project Is Not
 
 This is **not** a production-scale LLM.
 
@@ -1239,7 +1028,7 @@ The purpose of this repository is to understand the **algorithmic and mathematic
 
 ---
 
-# 16. What Is Simplified
+## 16. What Is Simplified
 
 Some implementations in the project are intentionally simplified so that the underlying idea remains visible.
 
@@ -1258,13 +1047,13 @@ The project is about understanding the mechanism, not pretending that a small Nu
 
 ---
 
-# 17. Why Implement It From Scratch?
+## 17. Why Implement It From Scratch?
 
 Using a high-level framework makes it easy to call a language model.
 
 Building the important pieces yourself forces the full computation to remain visible:
 
-```text
+```
 token
   ↓
 embedding
@@ -1296,87 +1085,61 @@ That makes it possible to inspect not only the final prediction, but also the in
 
 ---
 
-# 18. Current Project Status
+## 18. Current Project Status
 
 The core educational implementation is complete enough to demonstrate the main Transformer-to-LLM pipeline:
 
-```text
-✓ Tokenization
-✓ Causal language modeling
-✓ Embeddings
-✓ Positional information
-✓ Q/K/V projection
-✓ Scaled dot-product attention
-✓ Multi-head attention
-✓ Residual connections
-✓ Layer normalization
-✓ Feed-forward network
-✓ Transformer language model
-✓ Cross-entropy objective
-✓ Backpropagation
-✓ Training
-✓ Next-token prediction
-✓ Greedy generation
-✓ Temperature sampling
-✓ Top-K sampling
-✓ Top-P sampling
-✓ KV cache
-✓ Cached attention
-✓ Prefill / decode
-✓ Cached generation
-✓ Sliding context-window generation
-✓ Automated tests
-✓ Static type checking
-✓ Linting
-```
+- ✅ Tokenization
+- ✅ Causal language modeling
+- ✅ Embeddings
+- ✅ Positional information
+- ✅ Q/K/V projection
+- ✅ Scaled dot-product attention
+- ✅ Multi-head attention
+- ✅ Residual connections
+- ✅ Layer normalization
+- ✅ Feed-forward network
+- ✅ Transformer language model
+- ✅ Cross-entropy objective
+- ✅ Backpropagation
+- ✅ Training
+- ✅ Next-token prediction
+- ✅ Greedy generation
+- ✅ Temperature sampling
+- ✅ Top-K sampling
+- ✅ Top-P sampling
+- ✅ KV cache
+- ✅ Cached attention
+- ✅ Prefill / decode
+- ✅ Cached generation
+- ✅ Sliding context-window generation
+- ✅ Automated tests
+- ✅ Static type checking
+- ✅ Linting
 
 ---
 
-# 19. A Compact Mental Model
+## 19. A Compact Mental Model
 
 If you remember only one thing from this repository, it should be this:
 
-$$
-\boxed{
-\text{LLM}
-=
-\text{Transformer}
-+
-\text{Language-Model Objective}
-+
-\text{Training}
-+
-\text{Autoregressive Inference}
-}
-$$
+$$\boxed{\text{LLM} = \text{Transformer} + \text{Language-Model Objective} + \text{Training} + \text{Autoregressive Inference}}$$
 
 And during generation:
 
-$$
-\boxed{
-x_{t+1}
-\sim
-P(\cdot \mid x_1,\ldots,x_t)
-}
-$$
+$$\boxed{x_{t+1} \sim P(\cdot \mid x_1,\ldots,x_t)}$$
 
 with Transformer inference providing the probability distribution and the generation strategy deciding how the next token is selected.
 
 For efficient autoregressive decoding:
 
-$$
-\boxed{
-\text{KV Cache}
-\Rightarrow
-\text{reuse previous Key/Value states}
-}
-$$
+$$\boxed{\text{KV Cache} \Rightarrow \text{reuse previous Key/Value states}}$$
 
 That is the central journey this repository is designed to make understandable.
 
 ---
 
-# 20. License
+## 20. License
 
 Add an open-source license before publishing the repository publicly.
 
@@ -1390,7 +1153,7 @@ Before publishing, add a `LICENSE` file to the repository and update this sectio
 
 This README describes the repository as it stood after the latest validation run:
 
-```text
+```
 Tests: 209 passed
 Ruff: clean
 Mypy: clean
