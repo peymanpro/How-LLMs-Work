@@ -14,6 +14,10 @@ from src.inference.top_k_sampling import (
     TopKSampler,
     TopKSamplingResult,
 )
+from src.inference.top_p_sampling import (
+    TopPSampler,
+    TopPSamplingResult,
+)
 from src.training.transformer_session_client import (
     TransformerSessionClient,
 )
@@ -37,6 +41,12 @@ class TopKGenerationStep:
     prediction: TopKSamplingResult
 
 
+@dataclass(frozen=True)
+class TopPGenerationStep:
+    context: tuple[int, ...]
+    prediction: TopPSamplingResult
+
+
 class TransformerInference:
     def __init__(
         self,
@@ -49,6 +59,9 @@ class TransformerInference:
             seed=sampling_seed
         )
         self._top_k_sampler = TopKSampler(
+            seed=sampling_seed
+        )
+        self._top_p_sampler = TopPSampler(
             seed=sampling_seed
         )
 
@@ -105,6 +118,27 @@ class TransformerInference:
         )
 
         return TopKGenerationStep(
+            context=tuple(token_ids),
+            prediction=prediction,
+        )
+
+    def sample_top_p_next(
+        self,
+        token_ids: list[int],
+        p: float,
+        temperature: float = 1.0,
+    ) -> TopPGenerationStep:
+        logits = self._session.predict_next_token(
+            token_ids
+        )
+
+        prediction = self._top_p_sampler.sample(
+            logits[-1],
+            p=p,
+            temperature=temperature,
+        )
+
+        return TopPGenerationStep(
             context=tuple(token_ids),
             prediction=prediction,
         )
