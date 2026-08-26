@@ -38,7 +38,8 @@ class CachedTransformerBackbone:
 
         if model_dimension % number_of_heads != 0:
             raise ValueError(
-                "Model dimension must be divisible by number of heads."
+                "Model dimension must be divisible "
+                "by number of heads."
             )
 
         self._vocabulary_size = vocabulary_size
@@ -113,12 +114,14 @@ class CachedTransformerBackbone:
 
         position = self._position
 
-        # Simple deterministic positional signal.
         positional = np.zeros_like(
             embedding
         )
 
-        positional[0, position % self._model_dimension] = 1.0
+        positional[
+            0,
+            position % self._model_dimension,
+        ] = 1.0
 
         hidden = (
             embedding
@@ -165,3 +168,4 @@ class CachedTransformerBackbone:
             outputs,
             axis=0,
         )
+

@@ -29,6 +29,10 @@ class PrefillDecodeEngine:
         self._model = model
 
     @property
+    def context_size(self) -> int:
+        return self._model.context_size
+
+    @property
     def cache_length(self) -> int:
         return self._model.cache_length
 
@@ -44,14 +48,21 @@ class PrefillDecodeEngine:
                 "Prompt cannot be empty."
             )
 
+        if len(token_ids) > self.context_size:
+            raise ValueError(
+                "Prompt exceeds context size."
+            )
+
         self._model.reset_cache()
 
-        logits = []
+        logits: list[float] = []
 
         for token_id in token_ids:
-            logits = self._model.incremental_logits(
-                token_id
-            ).tolist()
+            logits = (
+                self._model.incremental_logits(
+                    token_id
+                ).tolist()
+            )
 
         return PrefillResult(
             token_ids=tuple(token_ids),
@@ -63,9 +74,17 @@ class PrefillDecodeEngine:
         self,
         token_id: int,
     ) -> DecodeResult:
-        logits = self._model.incremental_logits(
-            token_id
-        ).tolist()
+        if self.cache_length >= self.context_size:
+            raise ValueError(
+                "Context size has been exceeded. "
+                "Use prefill() with the current context window."
+            )
+
+        logits = (
+            self._model.incremental_logits(
+                token_id
+            ).tolist()
+        )
 
         return DecodeResult(
             token_id=token_id,

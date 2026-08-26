@@ -122,7 +122,29 @@ class KVCache:
             axis=0,
         )
 
-    def clear(self) -> None:
+    def truncate_left(
+        self,
+        count: int,
+    ) -> None:
+        if count < 0:
+            raise ValueError(
+                "Truncation count cannot be negative."
+            )
+
+        if count > self.sequence_length:
+            raise ValueError(
+                "Truncation count cannot exceed cache length."
+            )
+
+        if count == 0:
+            return
+
+        self._keys = self._keys[count:].copy()
+        self._values = self._values[count:].copy()
+
+    def clear(
+        self,
+    ) -> None:
         self._keys = np.empty(
             (
                 0,

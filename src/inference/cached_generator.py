@@ -47,6 +47,11 @@ class CachedTextGenerator:
                 "max_new_tokens cannot be negative."
             )
 
+        if len(prompt) > self._engine.context_size:
+            raise ValueError(
+                "Prompt exceeds context size."
+            )
+
         generated = list(prompt)
 
         if max_new_tokens == 0:
@@ -78,11 +83,26 @@ class CachedTextGenerator:
             ):
                 break
 
-            decoded = self._engine.decode(
-                token_id
-            )
+            if (
+                self._engine.cache_length
+                >= self._engine.context_size
+            ):
+                window = generated[
+                    -self._engine.context_size :
+                ]
 
-            logits = decoded.next_logits
+                prefill = self._engine.prefill(
+                    window
+                )
+
+                logits = prefill.next_logits
+
+            else:
+                decoded = self._engine.decode(
+                    token_id
+                )
+
+                logits = decoded.next_logits
 
         return CachedGenerationResult(
             token_ids=tuple(generated)

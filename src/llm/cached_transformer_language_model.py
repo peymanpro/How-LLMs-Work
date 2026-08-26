@@ -83,9 +83,20 @@ class CachedTransformerLanguageModel:
             token_id
         )
 
-        return self._project(
+        logits = self._project(
             hidden
-        )[0]
+        )
+
+        if logits.shape != (
+            1,
+            self._vocabulary_size,
+        ):
+            raise ValueError(
+                "Incremental projection returned "
+                "an unexpected shape."
+            )
+
+        return logits[0]
 
     def _project(
         self,

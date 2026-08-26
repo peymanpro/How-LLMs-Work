@@ -136,6 +136,25 @@ class CachedMultiHeadAttention:
         for cache in self._caches:
             cache.clear()
 
+    def truncate_cache_left(
+        self,
+        count: int,
+    ) -> None:
+        if count < 0:
+            raise ValueError(
+                "Truncation count cannot be negative."
+            )
+
+        if count > self.cache_length:
+            raise ValueError(
+                "Truncation count cannot exceed cache length."
+            )
+
+        for cache in self._caches:
+            cache.truncate_left(
+                count
+            )
+
     def forward_token(
         self,
         inputs: np.ndarray,
