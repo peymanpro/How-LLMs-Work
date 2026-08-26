@@ -171,6 +171,15 @@ class TransformerSessionClient:
             ],
         )
 
+    def predict_next_token(
+        self,
+        token_ids: list[int],
+    ) -> list[list[float]]:
+        result = self.forward(
+            token_ids
+        )
+
+        return result.logits
     def close(self) -> None:
         if self._process.poll() is not None:
             return
@@ -183,3 +192,4 @@ class TransformerSessionClient:
             )
         finally:
             self._process.wait()
+

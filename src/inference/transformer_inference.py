@@ -1,0 +1,43 @@
+﻿from __future__ import annotations
+
+from dataclasses import dataclass
+
+from src.inference.next_token import (
+    NextTokenPrediction,
+    NextTokenPredictor,
+)
+from src.training.transformer_session_client import (
+    TransformerSessionClient,
+)
+
+
+@dataclass(frozen=True)
+class GenerationStep:
+    context: tuple[int, ...]
+    prediction: NextTokenPrediction
+
+
+class TransformerInference:
+    def __init__(
+        self,
+        session: TransformerSessionClient,
+    ) -> None:
+        self._session = session
+        self._predictor = NextTokenPredictor()
+
+    def predict_next(
+        self,
+        token_ids: list[int],
+    ) -> GenerationStep:
+        logits = self._session.predict_next_token(
+            token_ids
+        )
+
+        prediction = self._predictor.predict(
+            logits
+        )
+
+        return GenerationStep(
+            context=tuple(token_ids),
+            prediction=prediction,
+        )
