@@ -47,6 +47,25 @@ class FakeInference:
         )
 
 
+    def next_logits(
+        self,
+        token_ids: list[int],
+    ) -> list[float]:
+        self.contexts.append(
+            list(token_ids)
+        )
+
+        token_id = self._predictions[
+            self._index
+        ]
+
+        self._index += 1
+
+        logits = [0.0] * 5
+        logits[token_id] = 1.0
+
+        return logits
+
 def test_generator_should_append_predicted_tokens() -> None:
     inference = FakeInference(
         [3, 4, 2]
@@ -188,5 +207,6 @@ def test_generator_should_reject_prompt_shorter_than_context_size() -> None:
             prompt=[0, 1],
             max_new_tokens=1,
         )
+
 
 

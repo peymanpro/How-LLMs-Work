@@ -2,6 +2,12 @@
 
 from dataclasses import dataclass
 
+import numpy as np
+
+from src.inference.sampling_strategy import (
+    GreedySamplingStrategy,
+    SamplingStrategy,
+)
 from src.inference.transformer_inference import (
     TransformerInference,
 )
@@ -12,11 +18,12 @@ class GenerationResult:
     token_ids: tuple[int, ...]
 
 
-class GreedyTextGenerator:
+class TextGenerator:
     def __init__(
         self,
         inference: TransformerInference,
         context_size: int,
+        strategy: SamplingStrategy | None = None,
     ) -> None:
         if context_size <= 0:
             raise ValueError(
@@ -25,6 +32,11 @@ class GreedyTextGenerator:
 
         self._inference = inference
         self._context_size = context_size
+        self._strategy = (
+            strategy
+            if strategy is not None
+            else GreedySamplingStrategy()
+        )
 
     def generate(
         self,
@@ -50,8 +62,7 @@ class GreedyTextGenerator:
         if len(prompt) < self._context_size:
             raise ValueError(
                 "Prompt must contain at least "
-                f"{self._context_size} tokens for the current "
-                "Transformer architecture."
+                f"{self._context_size} tokens."
             )
 
         generated = list(prompt)
@@ -61,27 +72,31 @@ class GreedyTextGenerator:
                 -self._context_size:
             ]
 
-            prediction = (
-                self._inference.predict_next(
-                    context
+            logits = self._inference.next_logits(
+                context
+            )
+
+            token_id = self._strategy.sample(
+                np.asarray(
+                    logits,
+                    dtype=np.float64,
                 )
             )
 
-            next_token = (
-                prediction.prediction.token_id
-            )
-
             generated.append(
-                next_token
+                token_id
             )
 
             if (
                 eos_token_id is not None
-                and next_token == eos_token_id
+                and token_id == eos_token_id
             ):
                 break
 
         return GenerationResult(
             token_ids=tuple(generated)
         )
+
+
+GreedyTextGenerator = TextGenerator
 

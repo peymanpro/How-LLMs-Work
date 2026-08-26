@@ -65,6 +65,16 @@ class TransformerInference:
             seed=sampling_seed
         )
 
+    def next_logits(
+        self,
+        token_ids: list[int],
+    ) -> list[float]:
+        logits = self._session.predict_next_token(
+            token_ids
+        )
+
+        return logits[-1]
+
     def predict_next(
         self,
         token_ids: list[int],
@@ -87,12 +97,12 @@ class TransformerInference:
         token_ids: list[int],
         temperature: float,
     ) -> SampledGenerationStep:
-        logits = self._session.predict_next_token(
+        logits = self.next_logits(
             token_ids
         )
 
         prediction = self._sampler.sample(
-            logits[-1],
+            logits,
             temperature=temperature,
         )
 
@@ -107,12 +117,12 @@ class TransformerInference:
         k: int,
         temperature: float = 1.0,
     ) -> TopKGenerationStep:
-        logits = self._session.predict_next_token(
+        logits = self.next_logits(
             token_ids
         )
 
         prediction = self._top_k_sampler.sample(
-            logits[-1],
+            logits,
             k=k,
             temperature=temperature,
         )
@@ -128,12 +138,12 @@ class TransformerInference:
         p: float,
         temperature: float = 1.0,
     ) -> TopPGenerationStep:
-        logits = self._session.predict_next_token(
+        logits = self.next_logits(
             token_ids
         )
 
         prediction = self._top_p_sampler.sample(
-            logits[-1],
+            logits,
             p=p,
             temperature=temperature,
         )
