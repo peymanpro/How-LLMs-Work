@@ -271,3 +271,57 @@ def test_model_input_embedding_gradient_should_match_numerical_gradient() -> Non
         atol=1e-5,
     )
 
+
+from src.llm.simple_language_model import (
+    SimpleContextLanguageModel,
+)
+
+
+def test_simple_language_model_should_be_order_invariant() -> None:
+    model = create_model()
+
+    first = model.forward(
+        [0, 1, 2]
+    )
+
+    reordered = model.forward(
+        [2, 1, 0]
+    )
+
+    np.testing.assert_allclose(
+        first.hidden,
+        reordered.hidden,
+        atol=1e-12,
+    )
+
+    np.testing.assert_allclose(
+        first.logits,
+        reordered.logits,
+        atol=1e-12,
+    )
+
+
+def test_simple_language_model_should_produce_same_logits_for_any_permutation() -> None:
+    model = create_model()
+
+    reference = model.forward(
+        [0, 1, 2]
+    ).logits
+
+    for sequence in [
+        [0, 2, 1],
+        [1, 0, 2],
+        [1, 2, 0],
+        [2, 0, 1],
+        [2, 1, 0],
+    ]:
+        result = model.forward(
+            sequence
+        )
+
+        np.testing.assert_allclose(
+            result.logits,
+            reference,
+            atol=1e-12,
+        )
+
