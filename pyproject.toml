@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "howllmswork"
+version = "0.1.0"
+description = "An educational implementation of Transformer and LLM fundamentals from scratch in Python."
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2.0,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8,<9",
+    "ruff>=0.12,<0.13",
+    "mypy>=1.17,<2",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = ["."]
