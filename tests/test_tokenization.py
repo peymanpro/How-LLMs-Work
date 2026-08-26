@@ -93,8 +93,44 @@ def test_vocabulary_should_reject_invalid_token_id() -> None:
         vocabulary.decode_id(2)
 
 
-def test_tokenizer_should_reject_unknown_token() -> None:
-    tokenizer = create_tokenizer()
 
-    with pytest.raises(KeyError):
-        tokenizer.encode("the dog")
+def test_tokenizer_should_encode_unknown_token_as_unk() -> None:
+    vocabulary = Vocabulary(
+        [
+            "<unk>",
+            "the",
+            "cat",
+        ]
+    )
+
+    tokenizer = WordTokenizer(
+        vocabulary
+    )
+
+    assert tokenizer.encode(
+        "the dog"
+    ) == [1, 0]
+
+
+def test_vocabulary_should_expose_unknown_token_id() -> None:
+    vocabulary = Vocabulary(
+        [
+            "<unk>",
+            "the",
+        ]
+    )
+
+    assert vocabulary.unknown_token_id == 0
+
+
+def test_vocabulary_should_reject_unknown_token_without_unk() -> None:
+    vocabulary = Vocabulary(
+        [
+            "the",
+            "cat",
+        ]
+    )
+
+    with pytest.raises(ValueError):
+        vocabulary.encode_token("dog")
+

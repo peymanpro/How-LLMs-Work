@@ -27,16 +27,23 @@ class Vocabulary:
     def size(self) -> int:
         return len(self._tokens)
 
+    @property
+    def unknown_token_id(self) -> int:
+        try:
+            return self._token_to_id["<unk>"]
+        except KeyError as error:
+            raise ValueError(
+                "Vocabulary does not contain <unk>."
+            ) from error
+
     def encode_token(
         self,
         token: str,
     ) -> int:
         try:
             return self._token_to_id[token]
-        except KeyError as error:
-            raise KeyError(
-                f"Unknown token: {token!r}"
-            ) from error
+        except KeyError:
+            return self.unknown_token_id
 
     def decode_id(
         self,
@@ -51,3 +58,4 @@ class Vocabulary:
 
     def tokens(self) -> tuple[str, ...]:
         return self._tokens
+

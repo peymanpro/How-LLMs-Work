@@ -4,7 +4,6 @@ import re
 
 from src.tokenization.vocabulary import Vocabulary
 
-
 _TOKEN_PATTERN = re.compile(
     r"\w+|[^\w\s]"
 )
