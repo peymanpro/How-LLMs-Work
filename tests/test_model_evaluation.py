@@ -72,3 +72,28 @@ def test_transition_model_should_reject_invalid_token() -> None:
 
     with pytest.raises(IndexError):
         model.logits([0, 1, 9])
+def test_model_evaluator_should_accept_tensor_batch() -> None:
+    model = create_model()
+
+    inputs = np.array(
+        [
+            [0, 1, 2],
+        ],
+        dtype=np.int64,
+    )
+
+    targets = np.array(
+        [
+            [1, 2, 3],
+        ],
+        dtype=np.int64,
+    )
+
+    result = BatchLanguageModelEvaluator().evaluate_tensor_batch(
+        model,
+        inputs,
+        targets,
+    )
+
+    assert result.examples == 1
+    assert result.loss < 0.001
