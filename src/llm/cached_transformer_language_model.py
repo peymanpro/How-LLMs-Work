@@ -96,7 +96,10 @@ class CachedTransformerLanguageModel:
                 "an unexpected shape."
             )
 
-        return logits[0]
+        return np.asarray(
+            logits[0],
+            dtype=np.float64,
+        )
 
     def _project(
         self,
@@ -112,7 +115,8 @@ class CachedTransformerLanguageModel:
                 "Backbone returned an unexpected hidden-state shape."
             )
 
-        return (
+        return np.asarray(
             hidden @ self._output_weights
-            + self._output_bias
+            + self._output_bias,
+            dtype=np.float64,
         )
