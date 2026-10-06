@@ -211,7 +211,7 @@ class TransformerSessionClient:
         parsed = json.loads(line)
 
         if not isinstance(parsed, dict):
-            raise RuntimeError(
+            raise TypeError(
                 "Transformer session returned a non-object response."
             )
 
