@@ -11,22 +11,10 @@ class LanguageModelObjective:
         logits: np.ndarray,
         targets: np.ndarray,
     ) -> float:
-        if logits.ndim != 3:
-            raise ValueError(
-                "Logits must have shape "
-                "(batch_size, sequence_length, vocabulary_size)."
-            )
-
-        if targets.ndim != 2:
-            raise ValueError(
-                "Targets must have shape "
-                "(batch_size, sequence_length)."
-            )
-
-        if logits.shape[:2] != targets.shape:
-            raise ValueError(
-                "Logits and targets dimensions do not match."
-            )
+        self._validate_targets(
+            logits,
+            targets,
+        )
 
         shifted = (
             logits
@@ -76,3 +64,37 @@ class LanguageModelObjective:
             )
 
         return math.exp(loss)
+
+    @staticmethod
+    def _validate_targets(
+        logits: np.ndarray,
+        targets: np.ndarray,
+    ) -> None:
+        if logits.ndim != 3:
+            raise ValueError(
+                "Logits must have shape "
+                "(batch_size, sequence_length, vocabulary_size)."
+            )
+
+        if targets.ndim != 2:
+            raise ValueError(
+                "Targets must have shape "
+                "(batch_size, sequence_length)."
+            )
+
+        if logits.shape[:2] != targets.shape:
+            raise ValueError(
+                "Logits and targets dimensions do not match."
+            )
+
+        if targets.size == 0:
+            raise ValueError(
+                "Targets cannot be empty."
+            )
+
+        if np.any(targets < 0) or np.any(
+            targets >= logits.shape[2]
+        ):
+            raise ValueError(
+                "Targets contain token IDs outside the vocabulary."
+            )
