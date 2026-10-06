@@ -1,12 +1,12 @@
-# HowLLMsWork
+# How-LLMs-Work
 
-[![Quality](https://github.com/peymanpro/HowLLMsWork/actions/workflows/quality.yml/badge.svg)](https://github.com/peymanpro/HowLLMsWork/actions/workflows/quality.yml)
+[![Quality](https://github.com/peymanpro/How-LLMs-Work/actions/workflows/quality.yml/badge.svg)](https://github.com/peymanpro/How-LLMs-Work/actions/workflows/quality.yml)
 [![Python](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 **A from-scratch exploration of LLM mechanics: tokenization, causal language modeling, generation, sampling, and KV-cache inference using Python and NumPy.**
 
-HowLLMsWork is a learning-oriented repository for making the path from text to next-token generation explicit.
+How-LLMs-Work is a learning-oriented repository for making the path from text to next-token generation explicit.
 
 It is intentionally small. The goal is not to reproduce a production LLM, but to expose the mechanics that sit around a Transformer language model:
 
@@ -41,7 +41,7 @@ The portfolio separates two closely related questions:
 | Repository | Main question |
 | --- | --- |
 | How-Transformers-Work | How does a Transformer compute representations and learn through attention and backpropagation? |
-| HowLLMsWork | How do language-model training objectives, token selection, generation, and KV-cache inference fit around that Transformer? |
+| How-LLMs-Work | How do language-model training objectives, token selection, generation, and KV-cache inference fit around that Transformer? |
 
 The optional integration in this repository can run the current How-Transformers-Work model as an external backbone.
 
@@ -309,7 +309,7 @@ The full Transformer training implementation lives in How-Transformers-Work.
 ## Project Structure
 
 ~~~
-HowLLMsWork/
+How-LLMs-Work/
 │
 ├── src/
 │   ├── attention/
