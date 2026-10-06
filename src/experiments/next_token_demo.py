@@ -50,7 +50,7 @@ def print_prediction(
 def main() -> None:
     repository = (
         Path(__file__).resolve().parents[3]
-        / "HowTransformersWork"
+        / "How-Transformers-Work"
     )
 
     session = TransformerSessionClient(
@@ -62,7 +62,6 @@ def main() -> None:
             vocabulary_size=5,
             model_dimension=8,
             head_dimension=4,
-            head_focuses=[0, 1],
             feed_forward_dimension=16,
             maximum_sequence_length=4,
             learning_rate=0.05,
