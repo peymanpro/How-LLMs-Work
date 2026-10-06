@@ -8,6 +8,123 @@ from pathlib import Path
 from typing import Any
 
 
+_SESSION_SERVER = r'''
+import json
+import sys
+
+from src.transformer.language_model import TinyTransformerLanguageModel
+from src.transformer.training import TransformerTrainer
+
+
+model = None
+trainer = None
+
+
+def respond(payload):
+    print(json.dumps(payload), flush=True)
+
+
+for line in sys.stdin:
+    try:
+        request = json.loads(line)
+        command = request["command"]
+
+        if command == "initialize":
+            model = TinyTransformerLanguageModel(
+                vocabulary_size=int(request["vocabulary_size"]),
+                model_dimension=int(request["model_dimension"]),
+                head_dimension=int(request["head_dimension"]),
+                feed_forward_dimension=int(
+                    request["feed_forward_dimension"]
+                ),
+                maximum_sequence_length=int(
+                    request["maximum_sequence_length"]
+                ),
+                seed=int(request.get("seed", 42)),
+            )
+            trainer = TransformerTrainer(
+                model=model,
+                learning_rate=float(request["learning_rate"]),
+            )
+            respond({"ok": True})
+            continue
+
+        if model is None or trainer is None:
+            raise RuntimeError(
+                "Transformer session has not been initialized."
+            )
+
+        if command == "forward":
+            token_ids = [int(value) for value in request["token_ids"]]
+            result = model.forward(token_ids)
+            respond(
+                {
+                    "ok": True,
+                    "logits": result.logits.values.data.tolist(),
+                    "decoder_output": (
+                        result.decoder_output.data.tolist()
+                    ),
+                }
+            )
+            continue
+
+        if command == "evaluate":
+            result = trainer.evaluate(
+                sequences=request["sequences"],
+                targets=request["targets"],
+            )
+            respond(
+                {
+                    "ok": True,
+                    "loss": float(result),
+                }
+            )
+            continue
+
+        if command == "train":
+            history = trainer.train(
+                sequences=[request["token_ids"]],
+                targets=[request["targets"]],
+                epochs=1,
+            )
+            respond(
+                {
+                    "ok": True,
+                    "loss": float(history[-1].average_loss),
+                }
+            )
+            continue
+
+        if command == "train_many":
+            history = trainer.train(
+                sequences=request["sequences"],
+                targets=request["targets"],
+                epochs=int(request["epochs"]),
+            )
+            respond(
+                {
+                    "ok": True,
+                    "loss": float(history[-1].average_loss),
+                }
+            )
+            continue
+
+        if command == "shutdown":
+            respond({"ok": True})
+            break
+
+        raise ValueError(f"Unknown command: {command}")
+
+    except Exception as error:
+        respond(
+            {
+                "ok": False,
+                "error": str(error),
+            }
+        )
+'''
+
+
 @dataclass(frozen=True)
 class ForwardResult:
     logits: list[list[float]]
@@ -27,8 +144,8 @@ class TransformerSessionClient:
         self._process = subprocess.Popen(
             [
                 sys.executable,
-                "-m",
-                "src.experiments.transformer_session",
+                "-c",
+                _SESSION_SERVER,
             ],
             cwd=repository_root,
             stdin=subprocess.PIPE,
@@ -110,7 +227,6 @@ class TransformerSessionClient:
         vocabulary_size: int,
         model_dimension: int,
         head_dimension: int,
-        head_focuses: list[int],
         feed_forward_dimension: int,
         maximum_sequence_length: int,
         learning_rate: float,
@@ -122,7 +238,6 @@ class TransformerSessionClient:
                 "vocabulary_size": vocabulary_size,
                 "model_dimension": model_dimension,
                 "head_dimension": head_dimension,
-                "head_focuses": head_focuses,
                 "feed_forward_dimension": (
                     feed_forward_dimension
                 ),
@@ -153,6 +268,42 @@ class TransformerSessionClient:
             )
         )
 
+    def train_many(
+        self,
+        sequences: list[list[int]],
+        targets: list[list[int]],
+        epochs: int,
+    ) -> TrainResult:
+        response = self._request(
+            {
+                "command": "train_many",
+                "sequences": sequences,
+                "targets": targets,
+                "epochs": epochs,
+            }
+        )
+
+        return TrainResult(
+            loss=float(
+                response["loss"]
+            )
+        )
+
+    def evaluate(
+        self,
+        sequences: list[list[int]],
+        targets: list[list[int]],
+    ) -> float:
+        response = self._request(
+            {
+                "command": "evaluate",
+                "sequences": sequences,
+                "targets": targets,
+            }
+        )
+
+        return float(response["loss"])
+
     def forward(
         self,
         token_ids: list[int],
@@ -180,6 +331,7 @@ class TransformerSessionClient:
         )
 
         return result.logits
+
     def close(self) -> None:
         if self._process.poll() is not None:
             return
@@ -192,4 +344,3 @@ class TransformerSessionClient:
             )
         finally:
             self._process.wait()
-
