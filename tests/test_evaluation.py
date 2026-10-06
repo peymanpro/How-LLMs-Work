@@ -6,7 +6,7 @@ from src.training.evaluation import (
 )
 
 
-def test_evaluator_should_return_loss_and_perplexity() -> None:
+def test_evaluator_should_return_loss_perplexity_and_accuracy() -> None:
     evaluator = LanguageModelEvaluator()
 
     logits = np.zeros(
@@ -17,6 +17,8 @@ def test_evaluator_should_return_loss_and_perplexity() -> None:
         ),
         dtype=np.float64,
     )
+
+    logits[:, :, 0] = 1.0
 
     targets = np.array(
         [
@@ -37,4 +39,8 @@ def test_evaluator_should_return_loss_and_perplexity() -> None:
 
     assert result.perplexity == pytest.approx(
         4.0
+    )
+
+    assert result.token_accuracy == pytest.approx(
+        1.0 / 6.0
     )
