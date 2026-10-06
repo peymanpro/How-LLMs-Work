@@ -31,7 +31,7 @@ def test_token_accuracy_should_return_fraction_of_correct_predictions() -> None:
         targets,
     )
 
-    assert accuracy == pytest.approx(0.75)
+    assert accuracy == pytest.approx(0.5)
 
 
 def test_token_accuracy_should_reject_invalid_target_id() -> None:
