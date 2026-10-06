@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="330" viewBox="0 0 1200 330" role="img" aria-labelledby="title desc">
+  <title id="title">How LLMs work pipeline</title>
+  <desc id="desc">An educational pipeline from text and tokenization through the Transformer, logits, loss, sampling, generation, and KV cache.</desc>
+  <style>
+    .box { fill: #ffffff; stroke: #222222; stroke-width: 2; rx: 12; }
+    .label { font: 600 17px sans-serif; fill: #111111; text-anchor: middle; }
+    .small { font: 14px sans-serif; fill: #444444; text-anchor: middle; }
+    .arrow { stroke: #222222; stroke-width: 2.5; marker-end: url(#arrow); }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#222222"/>
+    </marker>
+  </defs>
+
+  <rect class="box" x="25" y="85" width="150" height="70"/>
+  <text class="label" x="100" y="116">Text</text>
+  <text class="small" x="100" y="139">raw sequence</text>
+
+  <line class="arrow" x1="175" y1="120" x2="225" y2="120"/>
+
+  <rect class="box" x="225" y="85" width="150" height="70"/>
+  <text class="label" x="300" y="116">Tokenization</text>
+  <text class="small" x="300" y="139">text → token IDs</text>
+
+  <line class="arrow" x1="375" y1="120" x2="425" y2="120"/>
+
+  <rect class="box" x="425" y="65" width="230" height="110"/>
+  <text class="label" x="540" y="98">Transformer backbone</text>
+  <text class="small" x="540" y="123">attention + representations</text>
+  <text class="small" x="540" y="147">see How-Transformers-Work</text>
+
+  <line class="arrow" x1="655" y1="120" x2="705" y2="120"/>
+
+  <rect class="box" x="705" y="85" width="150" height="70"/>
+  <text class="label" x="780" y="116">Logits</text>
+  <text class="small" x="780" y="139">next-token scores</text>
+
+  <line class="arrow" x1="855" y1="120" x2="905" y2="120"/>
+
+  <rect class="box" x="905" y="40" width="125" height="70"/>
+  <text class="label" x="967" y="71">Loss</text>
+  <text class="small" x="967" y="94">training path</text>
+
+  <rect class="box" x="905" y="150" width="125" height="70"/>
+  <text class="label" x="967" y="181">Sampling</text>
+  <text class="small" x="967" y="204">inference path</text>
+
+  <line class="arrow" x1="1030" y1="75" x2="1090" y2="75"/>
+  <line class="arrow" x1="1030" y1="185" x2="1090" y2="185"/>
+
+  <rect class="box" x="1090" y="40" width="85" height="70"/>
+  <text class="label" x="1132" y="71">Train</text>
+  <text class="small" x="1132" y="94">update θ</text>
+
+  <rect class="box" x="1090" y="150" width="85" height="70"/>
+  <text class="label" x="1132" y="181">Generate</text>
+  <text class="small" x="1132" y="204">autoregressive</text>
+
+  <rect class="box" x="760" y="250" width="260" height="55"/>
+  <text class="label" x="890" y="282">KV cache → reuse K/V during decode</text>
+</svg>
