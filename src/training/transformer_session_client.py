@@ -5,7 +5,7 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 _SESSION_SERVER = r'''
 import json
@@ -208,7 +208,17 @@ class TransformerSessionClient:
                 f"stderr: {stderr}"
             )
 
-        response = json.loads(line)
+        parsed = json.loads(line)
+
+        if not isinstance(parsed, dict):
+            raise RuntimeError(
+                "Transformer session returned a non-object response."
+            )
+
+        response = cast(
+            dict[str, Any],
+            parsed,
+        )
 
         if not response.get("ok", False):
             raise RuntimeError(
