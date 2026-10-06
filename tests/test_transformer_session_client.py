@@ -10,14 +10,16 @@ from src.training.transformer_session_client import (
 def repository_root() -> Path:
     return (
         Path(__file__).resolve().parents[2]
-        / "HowTransformersWork"
+        / "How-Transformers-Work"
     )
 
 
-@pytest.mark.skipif(
+pytestmark = pytest.mark.skipif(
     not repository_root().exists(),
-    reason="HowTransformersWork repository is not available.",
+    reason="How-Transformers-Work repository is not available.",
 )
+
+
 def test_transformer_session_should_keep_model_alive() -> None:
     client = TransformerSessionClient(
         repository_root()
@@ -27,10 +29,9 @@ def test_transformer_session_should_keep_model_alive() -> None:
         client.initialize(
             vocabulary_size=5,
             model_dimension=8,
-            head_dimension=4,
-            head_focuses=[0, 1],
+            head_dimension=2,
             feed_forward_dimension=16,
-            maximum_sequence_length=4,
+            maximum_sequence_length=8,
             learning_rate=0.05,
         )
 
