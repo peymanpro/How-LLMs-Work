@@ -24,12 +24,6 @@ jobs:
       - name: Run tests
         run: python -m pytest
 
-      - name: Inspect Ruff fixes
-        run: |
-          python -m ruff check . --fix
-          git diff -- src/experiments/how_transformers_work_integration.py src/training/transformer_session_client.py
-          git checkout -- src/experiments/how_transformers_work_integration.py src/training/transformer_session_client.py
-
       - name: Run Ruff
         run: python -m ruff check .
 
