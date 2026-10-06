@@ -14,11 +14,11 @@ class TensorBatch:
 
     @property
     def batch_size(self) -> int:
-        return self.inputs.shape[0]
+        return int(self.inputs.shape[0])
 
     @property
     def context_size(self) -> int:
-        return self.inputs.shape[1]
+        return int(self.inputs.shape[1])
 
 
 class TensorBatchBuilder:
