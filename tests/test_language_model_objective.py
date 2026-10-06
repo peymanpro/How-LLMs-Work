@@ -113,3 +113,46 @@ def test_perplexity_should_reject_negative_loss() -> None:
 
     with pytest.raises(ValueError):
         objective.perplexity(-1.0)
+
+
+def test_cross_entropy_should_reject_target_outside_vocabulary() -> None:
+    objective = LanguageModelObjective()
+
+    with pytest.raises(ValueError):
+        objective.cross_entropy(
+            np.zeros(
+                (
+                    1,
+                    2,
+                    3,
+                )
+            ),
+            np.asarray(
+                [
+                    [0, 3],
+                ],
+                dtype=np.int64,
+            ),
+        )
+
+
+def test_cross_entropy_should_reject_empty_targets() -> None:
+    objective = LanguageModelObjective()
+
+    with pytest.raises(ValueError):
+        objective.cross_entropy(
+            np.zeros(
+                (
+                    1,
+                    0,
+                    3,
+                )
+            ),
+            np.empty(
+                (
+                    1,
+                    0,
+                ),
+                dtype=np.int64,
+            ),
+        )
