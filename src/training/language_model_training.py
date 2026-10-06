@@ -122,4 +122,7 @@ class LanguageModelTrainingStep:
 
         gradient /= targets.shape[0]
 
-        return gradient
+        return np.asarray(
+            gradient,
+            dtype=np.float64,
+        )
