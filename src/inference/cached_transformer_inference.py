@@ -83,7 +83,10 @@ class CachedTransformerInference:
             token_id
         )
 
-        return logits.tolist()
+        return [
+            float(value)
+            for value in logits.tolist()
+        ]
 
     def predict_next(
         self,
