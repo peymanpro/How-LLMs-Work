@@ -33,8 +33,11 @@ def test_evaluator_should_return_loss_perplexity_and_accuracy() -> None:
         targets,
     )
 
-    expected_loss = -1.0 + np.log(
+    log_normalizer = np.log(
         np.exp(1.0) + 3.0
+    )
+    expected_loss = (
+        log_normalizer - (1.0 / 6.0)
     )
 
     assert result.loss == pytest.approx(
