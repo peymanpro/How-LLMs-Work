@@ -37,10 +37,7 @@ def main() -> None:
         result = evaluator.evaluate_batch(model, batch)
 
         print(f"Batch {index}:")
-        print(f"  Loss:       {result.loss:.6f}")
-        print(f"  Perplexity: {result.perplexity:.6f}")
+        print(f"  Loss:          {result.loss:.6f}")
+        print(f"  Perplexity:    {result.perplexity:.6f}")
+        print(f"  Token accuracy:{result.token_accuracy:.6f}")
         print()
-
-
-if __name__ == "__main__":
-    main()
