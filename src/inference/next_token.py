@@ -75,7 +75,7 @@ class NextTokenPredictor:
                 "Cannot normalize logits into probabilities."
             )
 
-        return (
-            exponentials
-            / denominator
+        return np.asarray(
+            exponentials / denominator,
+            dtype=np.float64,
         )
