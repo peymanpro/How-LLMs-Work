@@ -33,12 +33,16 @@ def test_evaluator_should_return_loss_perplexity_and_accuracy() -> None:
         targets,
     )
 
+    expected_loss = -1.0 + np.log(
+        np.exp(1.0) + 3.0
+    )
+
     assert result.loss == pytest.approx(
-        np.log(4.0)
+        expected_loss
     )
 
     assert result.perplexity == pytest.approx(
-        4.0
+        np.exp(expected_loss)
     )
 
     assert result.token_accuracy == pytest.approx(
