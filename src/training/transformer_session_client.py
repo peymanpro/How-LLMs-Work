@@ -7,8 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-
-_SESSION_SERVER = r'''
+$1 = r'''
 import json
 import sys
 
