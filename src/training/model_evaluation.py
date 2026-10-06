@@ -13,6 +13,7 @@ from src.training.evaluation import LanguageModelEvaluator
 class ModelEvaluationResult:
     loss: float
     perplexity: float
+    token_accuracy: float
     examples: int
 
 
@@ -83,8 +84,10 @@ class BatchLanguageModelEvaluator:
         return ModelEvaluationResult(
             loss=result.loss,
             perplexity=result.perplexity,
+            token_accuracy=result.token_accuracy,
             examples=inputs.shape[0],
         )
+
     def evaluate_batch(
         self,
         model: LanguageModel,
@@ -149,6 +152,6 @@ class BatchLanguageModelEvaluator:
         return ModelEvaluationResult(
             loss=result.loss,
             perplexity=result.perplexity,
+            token_accuracy=result.token_accuracy,
             examples=len(batch.inputs),
         )
-
