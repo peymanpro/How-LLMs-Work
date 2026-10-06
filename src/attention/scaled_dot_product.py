@@ -142,7 +142,7 @@ class ScaledDotProductAttention:
             keepdims=True,
         )
 
-        return (
-            exponentials
-            / totals
+        return np.asarray(
+            exponentials / totals,
+            dtype=np.float64,
         )
