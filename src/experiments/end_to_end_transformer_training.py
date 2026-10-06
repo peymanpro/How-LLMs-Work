@@ -10,20 +10,25 @@ from src.training.transformer_training_bridge import (
 def main() -> None:
     repository = (
         Path(__file__).resolve().parents[3]
-        / "HowTransformersWork"
+        / "How-Transformers-Work"
     )
+
+    if not repository.exists():
+        raise RuntimeError(
+            "How-Transformers-Work repository was not found at "
+            f"{repository}"
+        )
 
     bridge = HowTransformersWorkTrainingBridge(
         repository_root=repository,
     )
 
     result = bridge.train(
-        vocabulary_size=5,
+        vocabulary_size=6,
         model_dimension=8,
-        head_dimension=4,
-        head_focuses=[0, 1],
+        head_dimension=2,
         feed_forward_dimension=16,
-        maximum_sequence_length=4,
+        maximum_sequence_length=8,
         learning_rate=0.05,
         epochs=100,
         sequences=[
@@ -38,9 +43,8 @@ def main() -> None:
     print("============")
     print()
     print(
-        "Backbone: HowTransformersWork"
+        "Backbone: How-Transformers-Work"
     )
-    print()
     print(
         f"Initial Loss: {result.initial_loss:.6f}"
     )
