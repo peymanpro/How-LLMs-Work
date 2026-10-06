@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from src.inference.transformer_inference import (
+    GenerationStep,
     TransformerInference,
 )
 from src.training.transformer_session_client import (
@@ -20,7 +21,7 @@ TOKENS = {
 
 def print_prediction(
     title: str,
-    result,
+    result: GenerationStep,
 ) -> None:
     predicted = TOKENS[
         result.prediction.token_id
