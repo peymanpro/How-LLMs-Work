@@ -64,9 +64,9 @@ class CachedScaledDotProductAttention:
             scores
         )
 
-        return (
-            probabilities
-            @ state.values
+        return np.asarray(
+            probabilities @ state.values,
+            dtype=np.float64,
         )
 
     @staticmethod
@@ -84,11 +84,12 @@ class CachedScaledDotProductAttention:
             - maximum
         )
 
-        return (
+        return np.asarray(
             exponentials
             / np.sum(
                 exponentials,
                 axis=1,
                 keepdims=True,
-            )
+            ),
+            dtype=np.float64,
         )
