@@ -2,15 +2,9 @@
 
 from pathlib import Path
 
-from src.llm.how_transformers_work_adapter import (
-    HowTransformersWorkBackboneAdapter,
-)
-from src.llm.transformer_language_model import (
-    TransformerLanguageModel,
-)
-from src.training.transformer_session_client import (
-    TransformerSessionClient,
-)
+from src.llm.how_transformers_work_adapter import HowTransformersWorkBackboneAdapter
+from src.llm.transformer_language_model import TransformerLanguageModel
+from src.training.transformer_session_client import TransformerSessionClient
 
 
 HOW_TRANSFORMERS_WORK_ROOT = (
