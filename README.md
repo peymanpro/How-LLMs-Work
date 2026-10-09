@@ -117,7 +117,7 @@ The mean causal cross-entropy is:
 =
 -\frac{1}{n}
 \sum_{t=1}^{n}
-\log P(x_t \mid x_{<t})
+\log P(x_t \mid x_1,\ldots,x_{t-1})
 ```
 
 Perplexity is:
