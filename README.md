@@ -107,39 +107,31 @@ target:    x₂ x₃ x₄
 the model learns:
 
 $$
-
 P(x_t \mid x_1,\ldots,x_{t-1})
-
 $$
 
 The mean causal cross-entropy is:
 
 $$
-
 \mathcal{L}
 =
 -\frac{1}{n}
 \sum_{t=1}^{n}
 \log P(x_t \mid x_{<t})
-
 $$
 
 Perplexity is:
 
 $$
-
 \mathrm{PPL} = e^{\mathcal{L}}
-
 $$
 
 The repository also reports token accuracy as a complementary diagnostic:
 
 $$
-
 \mathrm{accuracy}
 =
 \frac{\text{number of correct next-token predictions}}{\text{number of prediction positions}}
-
 $$
 
 These metrics answer different questions: loss and perplexity measure the quality of the predicted distribution, while token accuracy measures how often the highest-scoring token is correct.
@@ -149,17 +141,13 @@ These metrics answer different questions: loss and perplexity measure the qualit
 The model produces a vocabulary-sized vector:
 
 $$
-
 z = [z_1,z_2,\ldots,z_V]
-
 $$
 
 Greedy selection chooses:
 
 $$
-
 \hat{y} = \arg\max_i z_i
-
 $$
 
 Sampling strategies modify the distribution before selecting a token.
@@ -167,12 +155,10 @@ Sampling strategies modify the distribution before selecting a token.
 ### Temperature
 
 $$
-
 p_i
 =
 \frac{e^{z_i/T}}
 {\sum_j e^{z_j/T}}
-
 $$
 
 Lower temperature sharpens the distribution; higher temperature makes it flatter.
@@ -192,11 +178,9 @@ The implementations are deliberately explicit so the difference between these st
 Generation repeatedly feeds the selected token back into the model:
 
 $$
-
 x_{t+1}
 \sim
 P(\cdot \mid x_1,\ldots,x_t)
-
 $$
 
 Conceptually:
@@ -253,25 +237,20 @@ attend over cached history
 For one head:
 
 $$
-
 K_{\mathrm{cache}}
 =
 [K_1;K_2;\ldots;K_t]
-
 $$
 
 $$
-
 V_{\mathrm{cache}}
 =
 [V_1;V_2;\ldots;V_t]
-
 $$
 
 and a new query uses:
 
 $$
-
 \mathrm{Attention}(Q_t,K_{\mathrm{cache}},V_{\mathrm{cache}})
 =
 \mathrm{softmax}
@@ -280,7 +259,6 @@ $$
 {\sqrt{d_h}}
 \right)
 V_{\mathrm{cache}}
-
 $$
 
 The repository makes the two phases explicit:
@@ -615,7 +593,6 @@ Implemented concepts:
 A useful conceptual decomposition is:
 
 $$
-
 \boxed{
 \text{LLM system}
 =
@@ -627,29 +604,24 @@ $$
 +
 \text{token selection}
 }
-
 $$
 
 During autoregressive generation:
 
 $$
-
 \boxed{
 x_{t+1}
 \sim
 P(\cdot \mid x_1,\ldots,x_t)
 }
-
 $$
 
 and during cached decoding:
 
 $$
-
 \boxed{
 \text{reuse previous K/V states}
 }
-
 $$
 
 That is the journey this repository is designed to make understandable.
